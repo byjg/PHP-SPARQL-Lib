@@ -1,5 +1,5 @@
-<?
-require_once( "sparqllib.php" );
+<?php
+require_once( "../vendor/autoload.php" );
 
 $endpoints = array( 
 	"http://rdf.ecs.soton.ac.uk/sparql/"=>"Real endpoint",
@@ -8,12 +8,12 @@ $endpoints = array(
 	"http://graphite.ecs.soton.ac.uk/sparqllib/examples/not-an-endpoint.txt"=>"Valid URL, but not an endpoint" );
 foreach( $endpoints as $endpoint=>$desc)
 {
-	$db = sparql_connect( $endpoint );
+	$db = new SparQL\Connection( $endpoint );
 	if( !$db ) { print sparql_errno() . ": " . sparql_error(). "\n"; exit; }
 
 	print "<h3 style='border-top:solid 1px #666; padding-top:8px;margin-top:8px'>$desc</h3>";
 	print "<p>$endpoint</p>";
-	if( $db->alive() ) 
+	if( $db->alive() )
 	{
 		print "<p>OK</p>";
 	}

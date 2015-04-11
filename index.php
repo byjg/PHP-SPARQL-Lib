@@ -63,6 +63,7 @@ strong { font-weight:bold; }
 	<div class="yui-b"><div class="yui-g" id='main'>
 
 
+<h1>Warning: Documentation Deprecated</h1>
 <h2><a name='intro'></a>Intro</h2>
 <p>This is a very simple RDF library to query SPARQL from PHP. It currently ignores language and datatype information to make it feel as similar as possible to the normal PHP SQL libraries.</p>
 <ul>

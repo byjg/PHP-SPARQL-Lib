@@ -1,17 +1,17 @@
 <?php
-require_once( "sparqllib.php" );
+require_once( "../vendor/autoload.php" );
 
-$db = sparql_connect( "http://rdf.ecs.soton.ac.uk/sparql/" );
-if( !$db ) { print sparql_errno() . ": " . sparql_error(). "\n"; exit; }
-sparql_ns( "foaf","http://xmlns.com/foaf/0.1/" );
+$db = new SparQL\Connection( "http://rdf.ecs.soton.ac.uk/sparql/" );
+if( !$db ) { print $db->errno . ": " . $db->error(). "\n"; exit; }
+$db->ns( "foaf","http://xmlns.com/foaf/0.1/" );
 
 $sparql = "SELECT * WHERE { ?person a foaf:Person . ?person foaf:name ?name } LIMIT 5";
-$result = sparql_query( $sparql ); 
-if( !$result ) { print sparql_errno() . ": " . sparql_error(). "\n"; exit; }
+$result = $db->query( $sparql );
+if( !$result ) { print $db->errno() . ": " . $db->error(). "\n"; exit; }
 
-$fields = sparql_field_array( $result );
+$fields = $result->fieldArray();
 
-print "<p>Number of rows: ".sparql_num_rows( $result )." results.</p>";
+print "<p>Number of rows: " . $result->numRows() . " results.</p>";
 print "<table class='example_table'>";
 print "<tr>";
 foreach( $fields as $field )
@@ -19,7 +19,7 @@ foreach( $fields as $field )
 	print "<th>$field</th>";
 }
 print "</tr>";
-while( $row = sparql_fetch_array( $result ) )
+while( $row = $result->fetchArray() )
 {
 	print "<tr>";
 	foreach( $fields as $field )

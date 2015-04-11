@@ -1,10 +1,14 @@
+<?php
+require_once( "../vendor/autoload.php" );
+?>
 <style>
 table.capabilities td { padding-right: 1em; } 
 .OK { background-color:#cfc; } 
 .Fail { background-color:#fcc; }
 </style>
-<?
-require_once( "sparqllib.php" );
+
+<?php
+
 print "<p>These are tests against PUBLIC endpoints. They may support LOAD when credentials are supplied.</p>";
 print "<p>A cache file is used to save the results for a week, as they will be very unlikely to change.</p>";
 print "<p>ARC2</p>";
@@ -19,12 +23,15 @@ print "<p>Bigfoot</p>";
 capability_table( "http://services.data.gov.uk/reference/sparql" );
 print "<p>Fuseki</p>";
 capability_table( "http://worldbank.270a.info/sparql" );
+
+
 function capability_table($endpoint)
 {
-	$db = sparql_connect( $endpoint );
-	$db->capabilityCache( "/usr/local/apache/sites/ecs.soton.ac.uk/graphite/htdocs/sparqllib/cache/caps.db" );
+	$db = new SparQL\Connection( $endpoint );
 
 	if( !$db ) { print $db->errno() . ": " . $db->error(). "\n"; exit; }
+
+	$db->capabilityCache( "/tmp/caps.db" );
 
 	print "<table class='capabilities'>";
 	foreach( $db->capabilityCodes() as $code )

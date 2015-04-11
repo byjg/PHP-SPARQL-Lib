@@ -1,0 +1,20 @@
+{
+    "name": "byjg/sparqllib",
+    "description": "Simple library to query SPARQL from PHP",
+    "authors": [
+        {
+            "name": "jg",
+            "email": "joao@byjg.com.br"
+        },
+        {
+            "name": "Christopher Gutteridge",
+            "email": "cjg@ecs.soton.ac.uk"
+        }
+    ],
+    "require": {},
+	"autoload": {
+		"psr-4": {
+			"SparQL\\": "SparQL/"
+		}
+	}
+}

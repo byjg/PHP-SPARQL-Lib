@@ -1,15 +1,16 @@
 <?php
-require_once( "sparqllib.php" );
+require_once( "../vendor/autoload.php" );
 
-$data = sparql_get( 
+$data = SparQL\Connection::get(
 	"http://rdf.ecs.soton.ac.uk/sparql/",
 	"
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 SELECT * WHERE { ?person a foaf:Person . ?person foaf:name ?name } LIMIT 5
 " );
+
 if( !isset($data) )
 {
-	print "<p>Error: ".sparql_errno().": ".sparql_error()."</p>";
+	print "<p>Error</p>";
 }
 
 print "<table class='example_table'>";
