@@ -4,28 +4,28 @@ namespace SparQL;
 
 class Connection
 {
-	var $db;
-	var $debug = false;
-	var $errno = null;
-	var $error = null;
-	var $ns = array();
-	var $params = null;
+	protected $db;
+	protected $debug = false;
+	protected $errno = null;
+	protected $error = null;
+	protected $ns = array();
+	protected $params = null;
 	# capabilities are either true, false or null if not yet tested.
 
-	function __construct( $endpoint )
+	public function __construct( $endpoint )
 	{
 		$this->endpoint = $endpoint;
 	}
 
-	function ns( $short, $long )
+	public function ns( $short, $long )
 	{
 		$this->ns[$short] = $long;
 	}
 
-	function errno() { return $this->errno; }
-	function error() { return $this->error; }
+	public function errno() { return $this->errno; }
+	public function error() { return $this->error; }
 
-	function cgiParams( $params = null )
+	public function cgiParams( $params = null )
 	{
 		if( $params === null ) { return $this->params; }
 		if( $params === "" ) { $this->params = null; return; }
@@ -38,7 +38,7 @@ class Connection
 	 * @param type $timeout
 	 * @return \SparQL\Result
 	 */
-	function query( $query, $timeout=null )
+	public function query( $query, $timeout=null )
 	{
 		$prefixes = "";
 		foreach( $this->ns as $k=>$v )
@@ -57,7 +57,7 @@ class Connection
 		return new Result( $this, $parser->rows, $parser->fields );
 	}
 
-	function alive( $timeout=3 )
+	public function alive( $timeout=3 )
 	{
 		$result = $this->query( "SELECT * WHERE { ?s ?p ?o } LIMIT 1", $timeout );
 
@@ -66,7 +66,7 @@ class Connection
 		return true;
 	}
 
-	function dispatchQuery( $sparql, $timeout=null )
+	public function dispatchQuery( $sparql, $timeout=null )
 	{
 		$url = $this->endpoint."?query=".urlencode( $sparql );
 		if( $this->params !== null )
@@ -140,8 +140,8 @@ class Connection
 	# caching so it can save results to a cache to save re-doing them
 	# and many more capability options (suggestions to cjg@ecs.soton.ac.uk)
 
-	var $caps = array();
-	var $caps_desc = array(
+	protected $caps = array();
+	protected $caps_desc = array(
 		"select"=>"Basic SELECT",
 		"constant_as"=>"SELECT (\"foo\" AS ?bar)",
 		"math_as"=>"SELECT (2+3 AS ?bar)",
@@ -151,24 +151,24 @@ class Connection
 		"load"=>"LOAD <...>",
 	);
 
-	var $caps_cache;
-	var $caps_anysubject;
-	function capabilityCache( $filename, $dba_type='db4' )
+	protected $caps_cache;
+	protected $caps_anysubject;
+	public function capabilityCache( $filename, $dba_type='db4' )
 	{
 		$this->caps_cache = dba_open($filename, "c", $dba_type );
 	}
-	function capabilityCodes()
+	public function capabilityCodes()
 	{
 		return array_keys( $this->caps_desc );
 	}
-	function capabilityDescription($code)
+	public function capabilityDescription($code)
 	{
 		return $this->caps_desc[$code];
 	}
 
 	# return true if the endpoint supports a capability
 	# nb. returns false if connecion isn't authoriased to use the feature, eg LOAD
-	function supports( $code )
+	public function supports( $code )
 	{
 		if( isset( $this->caps[$code] ) ) { return $this->caps[$code]; }
 		$was_cached = false;
@@ -214,7 +214,7 @@ class Connection
 		return $r;
 	}
 
-	function anySubject()
+	public function anySubject()
 	{
 		if( !isset( $this->caps_anysubject ) )
 		{
@@ -230,7 +230,7 @@ class Connection
 	}
 
 	# return true if the endpoint supports SELECT
-	function testSelect()
+	public function testSelect()
 	{
 		$output = $this->dispatchQuery(
 		  "SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 1" );
@@ -238,7 +238,7 @@ class Connection
 	}
 
 	# return true if the endpoint supports AS
-	function testMathAs()
+	public function testMathAs()
 	{
 		$output = $this->dispatchQuery(
 		  "SELECT (1+2 AS ?bar) WHERE { ?s ?p ?o } LIMIT 1" );
@@ -246,7 +246,7 @@ class Connection
 	}
 
 	# return true if the endpoint supports AS
-	function testConstantAs()
+	public function testConstantAs()
 	{
 		$output = $this->dispatchQuery(
 		  "SELECT (\"foo\" AS ?bar) WHERE { ?s ?p ?o } LIMIT 1" );
@@ -254,7 +254,7 @@ class Connection
 	}
 
 	# return true if the endpoint supports SELECT (COUNT(?x) as ?n) ... GROUP BY
-	function testCount()
+	public function testCount()
 	{
 		# assumes at least one rdf:type predicate
 		$s = $this->anySubject();
@@ -264,7 +264,7 @@ class Connection
 		return !isset( $this->errno );
 	}
 
-	function testMax()
+	public function testMax()
 	{
 		$s = $this->anySubject();
 		if( !isset($s) ) { return false; }
@@ -273,7 +273,7 @@ class Connection
 		return !isset( $this->errno );
 	}
 
-	function testSample()
+	public function testSample()
 	{
 		$s = $this->anySubject();
 		if( !isset($s) ) { return false; }
@@ -282,7 +282,7 @@ class Connection
 		return !isset( $this->errno );
 	}
 
-	function testLoad()
+	public function testLoad()
 	{
 		$output = $this->dispatchQuery(
 		  "LOAD <http://graphite.ecs.soton.ac.uk/sparqllib/examples/loadtest.rdf>" );

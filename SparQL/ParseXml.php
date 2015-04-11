@@ -9,31 +9,31 @@ class ParseXml
 {
 
 	// XML parser variables
-	var $parser;
-	var $name;
-	var $attr;
-	var $data  = array();
-	var $stack = array();
-	var $keys;
-	var $path;
-	var $looks_legit = false;
-	var $error;
+	protected $parser;
+	protected $name;
+	protected $attr;
+	protected $data  = array();
+	protected $stack = array();
+	protected $keys;
+	protected $path;
+	protected $looks_legit = false;
+	protected $error;
 
 	// either you pass url atau contents.
 	// Use 'url' or 'contents' for the parameter
-	var $type;
+	protected $type;
 
-	// function with the default parameter value
-	function __construct($url='http://www.opocot.com', $type='url') {
+	// public function with the default parameter value
+	public function __construct($url='http://www.opocot.com', $type='url') {
 		$this->type = $type;
 		$this->url  = $url;
 		$this->parse();
 	}
 
-	function error() { return $this->error; }
+	public function error() { return $this->error; }
 
 	// parse XML data
-	function parse()
+	public function parse()
 	{
 		$this->rows = array();
 		$this->fields = array();
@@ -80,7 +80,7 @@ class ParseXml
 		}
 	}
 
-	function startXML($parser, $name, $attr)
+	public function startXML($parser, $name, $attr)
 	{
 		if( $name == "sparql" ) { $this->looks_legit = true; }
 		if( $name == "result" )
@@ -115,7 +115,7 @@ class ParseXml
 		}
 	}
 
-	function endXML($parser, $name)	{
+	public function endXML($parser, $name)	{
 		if( $name == "result" )
 		{
 			$this->rows[] = $this->result;
@@ -137,7 +137,7 @@ class ParseXml
 		}
 	}
 
-	function charXML($parser, $data)	{
+	public function charXML($parser, $data)	{
 		@$this->chars .= $data;
 	}
 

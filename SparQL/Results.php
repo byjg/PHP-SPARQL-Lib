@@ -4,10 +4,19 @@ namespace SparQL;
 
 class Results extends \ArrayIterator
 {
-	var $fields;
-	function fields() { return $this->fields; }
+	protected $fields;
 
-	function toHtml()
+	public function setFields($fields)
+	{
+		$this->fields = $fields;
+	}
+	
+	public function getFields()
+	{
+		return $this->fields;
+	}
+
+	public function toHtml()
 	{
 		$html = "<table class='sparql-results'><tr>";
 		foreach( $this->fields as $i=>$field )

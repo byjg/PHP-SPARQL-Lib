@@ -15,7 +15,7 @@ if( !isset($data) )
 
 print "<table class='example_table'>";
 print "<tr>";
-foreach( $data->fields() as $field )
+foreach( $data->getFields() as $field )
 {
 	print "<th>$field</th>";
 }
@@ -23,7 +23,7 @@ print "</tr>";
 foreach( $data as $row )
 {
 	print "<tr>";
-	foreach( $data->fields() as $field )
+	foreach( $data->getFields() as $field )
 	{
 		print "<td>$row[$field]</td>";
 	}

@@ -4,18 +4,18 @@ namespace SparQL;
 
 class Result
 {
-	var $rows;
-	var $fields;
-	var $db;
-	var $i = 0;
-	function __construct( $db, $rows, $fields )
+	protected $rows;
+	protected $fields;
+	protected $db;
+	protected $i = 0;
+	public function __construct( $db, $rows, $fields )
 	{
 		$this->rows = $rows;
 		$this->fields = $fields;
 		$this->db = $db;
 	}
 
-	function fetchArray()
+	public function fetchArray()
 	{
 		if( !@$this->rows[$this->i] ) { return; }
 		$r = array();
@@ -39,10 +39,10 @@ class Result
 	 *
 	 * @return Results
 	 */
-	function fetchAll()
+	public function fetchAll()
 	{
 		$r = new Results();
-		$r->fields = $this->fields;
+		$r->setFields($this->fields);
 		foreach( $this->rows as $i=>$row )
 		{
 			$r[]= $this->fetchArray();
@@ -50,17 +50,17 @@ class Result
 		return $r;
 	}
 
-	function numRows()
+	public function numRows()
 	{
 		return sizeof( $this->rows );
 	}
 
-	function fieldArray()
+	public function fieldArray()
 	{
 		return $this->fields;
 	}
 
-	function fieldName($i)
+	public function fieldName($i)
 	{
 		return $this->fields[$i];
 	}
