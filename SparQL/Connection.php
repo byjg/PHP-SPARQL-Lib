@@ -155,7 +155,11 @@ class Connection
 	protected $caps_anysubject;
 	public function capabilityCache( $filename, $dba_type='db4' )
 	{
-		$this->caps_cache = array($filename, $dba_type) ;
+		$handlers = dba_handlers(true);
+		if (array_key_exists($dba_type, $handlers)) // it is possible to save cache?
+		{
+			$this->caps_cache = array($filename, $dba_type) ;
+		}
 	}
 	public function capabilityCodes()
 	{
