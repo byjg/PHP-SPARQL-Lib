@@ -155,7 +155,7 @@ class Connection
 	protected $caps_anysubject;
 	public function capabilityCache( $filename, $dba_type='db4' )
 	{
-		$this->caps_cache = dba_open($filename, "c", $dba_type );
+		$this->caps_cache = array($filename, $dba_type) ;
 	}
 	public function capabilityCodes()
 	{
@@ -174,9 +174,11 @@ class Connection
 		$was_cached = false;
 		if( isset( $this->caps_cache ) )
 		{
+			$dbaCache = dba_open($this->caps_cache[0], "c", $this->caps_cache[1] );
+
 			$CACHE_TIMEOUT_SECONDS = 7*24*60*60;
 			$db_key = $this->endpoint.";".$code;
-			$db_val = dba_fetch( $db_key, $this->caps_cache );
+			$db_val = dba_fetch( $db_key, $dbaCache );
 			if( $db_val !== false )
 			{
 				list( $result, $when ) = preg_split( '/;/', $db_val );
@@ -186,6 +188,8 @@ class Connection
 				}
 				$was_cached = true;
 			}
+
+			dba_close($dbaCache);
 		}
 		$r = null;
 
@@ -200,16 +204,20 @@ class Connection
 		$this->caps[$code] = $r;
 		if( isset( $this->caps_cache ) )
 		{
+			$dbaCache = dba_open($this->caps_cache[0], "c", $this->caps_cache[1] );
+
 			$db_key = $this->endpoint.";".$code;
 			$db_val = $r.";".time();
 			if( $was_cached )
 			{
-				dba_replace( $db_key, $db_val, $this->caps_cache );
+				dba_replace( $db_key, $db_val, $dbaCache );
 			}
 			else
 			{
-				dba_insert( $db_key, $db_val, $this->caps_cache );
+				dba_insert( $db_key, $db_val, $dbaCache );
 			}
+
+			dba_close($dbaCache);
 		}
 		return $r;
 	}
