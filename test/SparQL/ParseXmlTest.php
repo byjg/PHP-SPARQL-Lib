@@ -19,7 +19,9 @@ class ParseXmlTest extends \PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        $this->object = new ParseXml;
+        $this->object = new ParseXml('file://' . __DIR__ . '/sample.rdf', 'url');
+
+        echo $this->object->parse();
     }
 
     /**

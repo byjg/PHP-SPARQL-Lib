@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<sparql xmlns="http://www.w3.org/2005/sparql-results#">
+  <head>
+    <!-- query time: 0.0201 sec -->
+    <variable name="person"/>
+    <variable name="name"/>
+  </head>
+  <results>
+    <result>
+      <binding name="person">
+        <bnode>b52272200000000</bnode>
+      </binding>
+      <binding name="name">
+        <literal datatype="http://www.w3.org/2001/XMLSchema#string">A Tarazona</literal>
+      </binding>
+    </result>
+    <result>
+      <binding name="person">
+        <bnode>b52272200000002</bnode>
+      </binding>
+      <binding name="name">
+        <literal datatype="http://www.w3.org/2001/XMLSchema#string">Goran Z Mashanovich</literal>
+      </binding>
+    </result>
+    <result>
+      <binding name="person">
+        <bnode>b52272200000080</bnode>
+      </binding>
+      <binding name="name">
+        <literal datatype="http://www.w3.org/2001/XMLSchema#string">Dr Olivia Bragg</literal>
+      </binding>
+    </result>
+    <result>
+      <binding name="person">
+        <bnode>b8f362200000082</bnode>
+      </binding>
+      <binding name="name">
+        <literal datatype="http://www.w3.org/2001/XMLSchema#string">Dr Mike Surridge</literal>
+      </binding>
+    </result>
+    <result>
+      <binding name="person">
+        <bnode>bf4120a00000000</bnode>
+      </binding>
+      <binding name="name">
+        <literal datatype="http://www.w3.org/2001/XMLSchema#string">Judith Joseph</literal>
+      </binding>
+    </result>
+  </results>
+</sparql>
