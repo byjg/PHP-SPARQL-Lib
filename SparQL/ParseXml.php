@@ -17,7 +17,10 @@ class ParseXml
 	protected $keys;
 	protected $path;
 	protected $looks_legit = false;
-	protected $error;
+
+    // Public properties
+    public $rows;
+    public $fields;
 
 	// either you pass url atau contents.
 	// Use 'url' or 'contents' for the parameter
@@ -29,8 +32,6 @@ class ParseXml
 		$this->url  = $url;
 		$this->parse();
 	}
-
-	public function error() { return $this->error; }
 
 	// parse XML data
 	public function parse()
@@ -49,15 +50,15 @@ class ParseXml
 			// if use type = 'url' now we open the XML with fopen
 
 			if (!($fp = fopen($this->url, 'rb'))) {
-				$this->error("Cannot open {$this->url}");
+				throw new Exception("Cannot open {$this->url}");
 			}
 
 			while (($data = fread($fp, 8192))) {
 				if (!xml_parse($this->parser, $data, feof($fp))) {
-					$this->error = sprintf('XML error at line %d column %d',
+					throw new Exception(sprintf('XML error at line %d column %d',
 						xml_get_current_line_number($this->parser),
-						xml_get_current_column_number($this->parser));
-					return;
+						xml_get_current_column_number($this->parser))
+					);
 				}
 			}
 	 	} else if ($this->type == 'contents') {
@@ -67,16 +68,16 @@ class ParseXml
 			foreach ($lines as $val) {
 				$data = $val . "\n";
 				if (!xml_parse($this->parser, $data)) {
-					$this->error = $data."\n".sprintf('XML error at line %d column %d',
+					throw new Exception($data."\n".sprintf('XML error at line %d column %d',
 						xml_get_current_line_number($this->parser),
-				 		xml_get_current_column_number($this->parser));
-					return;
+				 		xml_get_current_column_number($this->parser))
+					);
 				}
 			}
 		}
 		if( !$this->looks_legit )
 		{
-			$this->error = "Didn't even see a sparql element, is this really an endpoint?";
+			throw new Exception("Didn't even see a sparql element, is this really an endpoint?");
 		}
 	}
 

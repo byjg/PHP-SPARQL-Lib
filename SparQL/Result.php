@@ -4,15 +4,22 @@ namespace SparQL;
 
 class Result
 {
+    /**
+     * @var array
+     */
 	protected $rows;
+
+    /**
+     * @var array
+     */
 	protected $fields;
-	protected $db;
+
 	protected $i = 0;
-	public function __construct( $db, $rows, $fields )
+
+	public function __construct( $rows, $fields )
 	{
 		$this->rows = $rows;
 		$this->fields = $fields;
-		$this->db = $db;
 	}
 
 	public function fetchArray()

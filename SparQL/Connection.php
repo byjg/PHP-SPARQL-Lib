@@ -6,8 +6,6 @@ class Connection
 {
 	protected $db;
 	protected $debug = false;
-	protected $errno = null;
-	protected $error = null;
 	protected $ns = array();
 	protected $params = null;
 	# capabilities are either true, false or null if not yet tested.
@@ -22,9 +20,6 @@ class Connection
 		$this->ns[$short] = $long;
 	}
 
-	public function errno() { return $this->errno; }
-	public function error() { return $this->error; }
-
 	public function cgiParams( $params = null )
 	{
 		if( $params === null ) { return $this->params; }
@@ -33,7 +28,7 @@ class Connection
 	}
 
 	/**
-	 * 
+	 *
 	 * @param type $query
 	 * @param type $timeout
 	 * @return \SparQL\Result
@@ -46,24 +41,23 @@ class Connection
 			$prefixes .= "PREFIX $k: <$v>\n";
 		}
 		$output = $this->dispatchQuery( $prefixes.$query, $timeout );
-		if( $this->errno ) { return; }
+
 		$parser = new ParseXml($output, 'contents');
-		if( $parser->error() )
-		{
-			$this->errno = -1; # to not clash with CURLOPT return; }
-			$this->error = $parser->error();
-			return;
-		}
-		return new Result( $this, $parser->rows, $parser->fields );
+
+        return new Result( $parser->rows, $parser->fields );
 	}
 
 	public function alive( $timeout=3 )
 	{
-		$result = $this->query( "SELECT * WHERE { ?s ?p ?o } LIMIT 1", $timeout );
-
-		if( $this->errno ) { return false; }
-
-		return true;
+        try
+        {
+            $result = $this->query( "SELECT * WHERE { ?s ?p ?o } LIMIT 1", $timeout );
+    		return true;
+        }
+        catch (Exception $ex)
+        {
+            return false;
+        }
 	}
 
 	public function dispatchQuery( $sparql, $timeout=null )
@@ -74,9 +68,8 @@ class Connection
 			$url .= "&".$this->params;
 		}
 		if( $this->debug ) { print "<div class='debug'><a href='".htmlspecialchars($url)."'>".htmlspecialchars($prefixes.$query)."</a></div>\n"; }
-		$this->errno = null;
-		$this->error = null;
-		$ch = curl_init($url);
+
+        $ch = curl_init($url);
 		#curl_setopt($ch, CURLOPT_HEADER, 1);
 		if( $timeout !== null )
 		{
@@ -89,27 +82,32 @@ class Connection
 			"Accept: application/sparql-results+xml"
 		));
 
+        $errno = null;
+        $error = null;
+
 		$output = curl_exec($ch);
 		$info = curl_getinfo($ch);
 		if(curl_errno($ch))
 		{
-			$this->errno = curl_errno( $ch );
-			$this->error = 'Curl error: ' . curl_error($ch);
-			return;
+			$errno = curl_errno( $ch );
+			$error = 'Curl error: ' . curl_error($ch);
 		}
 		if( $output === '' )
 		{
-			$this->errno = "-1";
-			$this->error = 'URL returned no data';
-			return;
+			$errno = "-1";
+			$error = 'URL returned no data';
 		}
 		if( $info['http_code'] != 200)
 		{
-			$this->errno = $info['http_code'];
-			$this->error = 'Bad response, '.$info['http_code'].': '.$output;
-			return;
+			$errno = $info['http_code'];
+			$error = 'Bad response, '.$info['http_code'].': '.$output;
 		}
 		curl_close($ch);
+
+        if (!is_null($errno))
+        {
+            throw new Exception($error, $errno);
+        }
 
 		return $output;
 	}
@@ -123,7 +121,6 @@ class Connection
 	public static function get( $endpoint, $sparql )
 	{
 		$db = new Connection( $endpoint );
-		if( !$db ) { return; }
 
 		$result = $db->query( $sparql );
 		if( !$result ) { return; }
@@ -244,61 +241,103 @@ class Connection
 	# return true if the endpoint supports SELECT
 	public function testSelect()
 	{
-		$output = $this->dispatchQuery(
-		  "SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 1" );
-		return !isset( $this->errno );
+        try
+        {
+            $this->dispatchQuery("SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 1" );
+            return true;
+        }
+        catch (Exception $ex)
+        {
+            return false;
+        }
 	}
 
 	# return true if the endpoint supports AS
 	public function testMathAs()
 	{
-		$output = $this->dispatchQuery(
-		  "SELECT (1+2 AS ?bar) WHERE { ?s ?p ?o } LIMIT 1" );
-		return !isset( $this->errno );
+        try
+        {
+            $this->dispatchQuery("SELECT (1+2 AS ?bar) WHERE { ?s ?p ?o } LIMIT 1" );
+            return true;
+        }
+        catch (Exception $ex)
+        {
+            return false;
+        }
 	}
 
 	# return true if the endpoint supports AS
 	public function testConstantAs()
 	{
-		$output = $this->dispatchQuery(
-		  "SELECT (\"foo\" AS ?bar) WHERE { ?s ?p ?o } LIMIT 1" );
-		return !isset( $this->errno );
+        try
+        {
+            $this->dispatchQuery("SELECT (\"foo\" AS ?bar) WHERE { ?s ?p ?o } LIMIT 1" );
+            return true;
+        }
+        catch (Exception $ex)
+        {
+            return false;
+        }
 	}
 
 	# return true if the endpoint supports SELECT (COUNT(?x) as ?n) ... GROUP BY
 	public function testCount()
 	{
-		# assumes at least one rdf:type predicate
-		$s = $this->anySubject();
-		if( !isset($s) ) { return false; }
-		$output = $this->dispatchQuery(
-		  "SELECT (COUNT(?p) AS ?n) ?o WHERE { <$s> ?p ?o } GROUP BY ?o" );
-		return !isset( $this->errno );
+        try
+        {
+            # assumes at least one rdf:type predicate
+            $s = $this->anySubject();
+            if( !isset($s) ) { return false; }
+            $this->dispatchQuery("SELECT (COUNT(?p) AS ?n) ?o WHERE { <$s> ?p ?o } GROUP BY ?o" );
+            return true;
+        }
+        catch (Exception $ex)
+        {
+            return false;
+        }
 	}
 
 	public function testMax()
 	{
-		$s = $this->anySubject();
-		if( !isset($s) ) { return false; }
-		$output = $this->dispatchQuery(
-		  "SELECT (MAX(?p) AS ?max) ?o WHERE { <$s> ?p ?o } GROUP BY ?o" );
-		return !isset( $this->errno );
+        try
+        {
+            $s = $this->anySubject();
+            if( !isset($s) ) { return false; }
+            $this->dispatchQuery("SELECT (MAX(?p) AS ?max) ?o WHERE { <$s> ?p ?o } GROUP BY ?o" );
+            return true;
+        }
+        catch (Exception $ex)
+        {
+            return false;
+        }
 	}
 
 	public function testSample()
 	{
-		$s = $this->anySubject();
-		if( !isset($s) ) { return false; }
-		$output = $this->dispatchQuery(
-		  "SELECT (SAMPLE(?p) AS ?sam) ?o WHERE { <$s> ?p ?o } GROUP BY ?o" );
-		return !isset( $this->errno );
+        try
+        {
+            $s = $this->anySubject();
+            if( !isset($s) ) { return false; }
+            $this->dispatchQuery("SELECT (SAMPLE(?p) AS ?sam) ?o WHERE { <$s> ?p ?o } GROUP BY ?o" );
+            return true;
+        }
+        catch (Exception $ex)
+        {
+            return false;
+        }
 	}
 
 	public function testLoad()
 	{
-		$output = $this->dispatchQuery(
-		  "LOAD <http://graphite.ecs.soton.ac.uk/sparqllib/examples/loadtest.rdf>" );
-		return !isset( $this->errno );
+        try
+        {
+            $this->dispatchQuery("LOAD <http://graphite.ecs.soton.ac.uk/sparqllib/examples/loadtest.rdf>" );
+            return true;
+        }
+        catch (Exception $ex)
+        {
+            return false;
+        }
 	}
 
 

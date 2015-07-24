@@ -1,7 +1,7 @@
 <?php
 require_once( "../vendor/autoload.php" );
 
-$endpoints = array( 
+$endpoints = array(
 	"http://rdf.ecs.soton.ac.uk/sparql/"=>"Real endpoint",
 	"http://"=>"Bad URL",
 	"http://graphite.ecs.soton.ac.uk/not-real"=>"404 URL",
@@ -9,7 +9,6 @@ $endpoints = array(
 foreach( $endpoints as $endpoint=>$desc)
 {
 	$db = new SparQL\Connection( $endpoint );
-	if( !$db ) { print sparql_errno() . ": " . sparql_error(). "\n"; exit; }
 
 	print "<h3 style='border-top:solid 1px #666; padding-top:8px;margin-top:8px'>$desc</h3>";
 	print "<p>$endpoint</p>";
@@ -19,6 +18,6 @@ foreach( $endpoints as $endpoint=>$desc)
 	}
 	else
 	{
-		print "<p>Not alive: ".$db->error()."</p>";
+		print "<p>Not alive</p>";
 	}
-}	
+}

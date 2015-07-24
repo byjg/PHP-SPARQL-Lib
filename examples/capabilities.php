@@ -2,8 +2,8 @@
 require_once( "../vendor/autoload.php" );
 ?>
 <style>
-table.capabilities td { padding-right: 1em; } 
-.OK { background-color:#cfc; } 
+table.capabilities td { padding-right: 1em; }
+.OK { background-color:#cfc; }
 .Fail { background-color:#fcc; }
 </style>
 
@@ -28,8 +28,6 @@ capability_table( "http://worldbank.270a.info/sparql" );
 function capability_table($endpoint)
 {
 	$db = new SparQL\Connection( $endpoint );
-
-	if( !$db ) { print $db->errno() . ": " . $db->error(). "\n"; exit; }
 
 	$db->capabilityCache( "/tmp/caps.db" );
 
