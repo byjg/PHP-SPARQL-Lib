@@ -1,5 +1,6 @@
 # PHP SPARQL Lib
 [![Build Status](https://travis-ci.org/byjg/PHP-SPARQL-Lib.svg?branch=master)](https://travis-ci.org/byjg/PHP-SPARQL-Lib)
+[![SensioLabsInsight](https://insight.sensiolabs.com/projects/41d16c0b-fdd6-4c00-8b46-9197b9489659/big.png)](https://insight.sensiolabs.com/projects/41d16c0b-fdd6-4c00-8b46-9197b9489659)
 
 Copyright 2010,2011,2012 Christopher Gutteridge & University of Southampton
 Licensed as LGPL
