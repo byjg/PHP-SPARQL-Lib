@@ -27,29 +27,45 @@ class ParseXml
 	protected $type;
 
 	// public function with the default parameter value
-	public function __construct($url='http://www.opocot.com', $type='url') {
-		$this->type = $type;
-		$this->url  = $url;
+	public function __construct($url) 
+	{
+		$this->url = $url;
+		$this->type = 'contents';
+		
+		if (preg_match('~^https?://~', $url))
+		{
+			$this->type = 'url';
+		}
+		else if (preg_match('~^file://~', $url))
+		{
+			$filename = str_replace('file://', '', $url);
+			if (!file_exists($filename))
+			{
+				throw new Exception("File name $url does not exists");
+			}
+			$this->url = file_get_contents($filename);
+		}
+		
 		$this->parse();
 	}
 
 	// parse XML data
-	public function parse()
+	protected function parse()
 	{
 		$this->rows = array();
 		$this->fields = array();
 		$data = '';
 		$this->parser = xml_parser_create ("UTF-8");
 		xml_set_object($this->parser, $this);
-		xml_set_element_handler($this->parser, 'startXML', 'endXML');
-		xml_set_character_data_handler($this->parser, 'charXML');
+		xml_set_element_handler($this->parser, 'startXml', 'endXml');
+		xml_set_character_data_handler($this->parser, 'charXml');
 
 		xml_parser_set_option($this->parser, XML_OPTION_CASE_FOLDING, false);
 
 		if ($this->type == 'url') {
 			// if use type = 'url' now we open the XML with fopen
 
-			if (!($fp = fopen($this->url, 'rb'))) {
+			if (!($fp = @fopen($this->url, 'rb'))) {
 				throw new Exception("Cannot open {$this->url}");
 			}
 
@@ -81,7 +97,7 @@ class ParseXml
 		}
 	}
 
-	public function startXML($parser, $name, $attr)
+	protected function startXml($parser, $name, $attr)
 	{
 		if( $name == "sparql" ) { $this->looks_legit = true; }
 		if( $name == "result" )
@@ -116,7 +132,8 @@ class ParseXml
 		}
 	}
 
-	public function endXML($parser, $name)	{
+	protected function endXml($parser, $name)
+	{
 		if( $name == "result" )
 		{
 			$this->rows[] = $this->result;
@@ -138,7 +155,8 @@ class ParseXml
 		}
 	}
 
-	public function charXML($parser, $data)	{
+	protected function charXml($parser, $data)
+	{
 		@$this->chars .= $data;
 	}
 
