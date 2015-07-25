@@ -24,22 +24,26 @@ class Result
 
 	public function fetchArray()
 	{
-		if( !@$this->rows[$this->i] ) { return; }
-		$r = array();
+		if( !isset($this->rows[$this->i]) )
+		{
+			return;
+		}
+
+		$result = array();
 		foreach( $this->rows[$this->i++]  as $k=>$v )
 		{
-			$r[$k] = $v["value"];
-			$r["$k.type"] = $v["type"];
+			$result[$k] = $v["value"];
+			$result["$k.type"] = $v["type"];
 			if( isset( $v["language"] ) )
 			{
-				$r["$k.language"] = $v["language"];
+				$result["$k.language"] = $v["language"];
 			}
 			if( isset( $v["datatype"] ) )
 			{
-				$r["$k.datatype"] = $v["datatype"];
+				$result["$k.datatype"] = $v["datatype"];
 			}
 		}
-		return $r;
+		return $result;
 	}
 
 	/**
@@ -48,18 +52,18 @@ class Result
 	 */
 	public function fetchAll()
 	{
-		$r = new Results();
-		$r->setFields($this->fields);
+		$result = new Results();
+		$result->setFields($this->fields);
 		foreach( $this->rows as $i=>$row )
 		{
-			$r[]= $this->fetchArray();
+			$result[]= $this->fetchArray();
 		}
-		return $r;
+		return $result;
 	}
 
 	public function numRows()
 	{
-		return sizeof( $this->rows );
+		return count( $this->rows );
 	}
 
 	public function fieldArray()

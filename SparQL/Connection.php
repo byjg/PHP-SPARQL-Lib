@@ -51,7 +51,7 @@ class Connection
 	{
         try
         {
-            $result = $this->query( "SELECT * WHERE { ?s ?p ?o } LIMIT 1", $timeout );
+            $this->query( "SELECT * WHERE { ?s ?p ?o } LIMIT 1", $timeout );
     		return true;
         }
         catch (Exception $ex)
@@ -70,7 +70,6 @@ class Connection
 		if( $this->debug ) { print "<div class='debug'><a href='".htmlspecialchars($url)."'>".htmlspecialchars($prefixes.$query)."</a></div>\n"; }
 
         $ch = curl_init($url);
-		#curl_setopt($ch, CURLOPT_HEADER, 1);
 		if( $timeout !== null )
 		{
 			curl_setopt($ch, CURLOPT_TIMEOUT, $timeout );

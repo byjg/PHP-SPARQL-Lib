@@ -16,6 +16,7 @@ class ParseXml
 	protected $stack = array();
 	protected $keys;
 	protected $path;
+	protected $chars = "";
 	protected $looks_legit = false;
 
     // Public properties
@@ -157,7 +158,7 @@ class ParseXml
 
 	protected function charXml($parser, $data)
 	{
-		@$this->chars .= $data;
+		$this->chars .= $data;
 	}
 
 }
