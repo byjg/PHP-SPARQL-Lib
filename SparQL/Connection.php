@@ -116,11 +116,16 @@ class Connection
 	 *
 	 * @param string $endpoint
 	 * @param string $sparql
+	 * @param array $ns
 	 * @return Results
 	 */
-	public static function get( $endpoint, $sparql )
+	public static function get( $endpoint, $sparql, $ns = null)
 	{
 		$db = new Connection( $endpoint );
+		foreach ((array)$ns as $key => $value)
+		{
+			$db->ns($key, $value);
+		}
 
 		$result = $db->query( $sparql );
 		if( !$result ) { return; }
