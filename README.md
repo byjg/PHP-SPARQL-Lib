@@ -1,4 +1,6 @@
 # PHP SPARQL Lib
+[![Build Status](https://travis-ci.org/byjg/PHP-SPARQL-Lib.svg?branch=master)](https://travis-ci.org/byjg/PHP-SPARQL-Lib)
+
 Copyright 2010,2011,2012 Christopher Gutteridge & University of Southampton
 Licensed as LGPL
 
