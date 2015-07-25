@@ -3,8 +3,8 @@ Copyright 2010,2011,2012 Christopher Gutteridge & University of Southampton
 Licensed as LGPL
 
 ## Info
-* Forked code.
-* Refactored code to support PHP 5.x namespaces, composer and autoload classes;
+* Forked code by Joao Gilberto Magalhaes.
+* Refactored code to support PHP 5.x namespaces, composer, autoload classes and unit tests;
 * Full documentation: http://graphite.ecs.soton.ac.uk/sparqllib/
 
 ## Example:
