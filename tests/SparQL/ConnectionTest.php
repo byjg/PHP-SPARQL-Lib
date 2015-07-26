@@ -62,7 +62,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @expectedException \SparQL\Exception
 	 */
-	function test_wrongSparQLDataSet()
+	function test_wrongSparQLDataset()
 	{
 		Connection::get("http://localhost/", "SELECT * WHERE { ?person a foaf:Person . ?person foaf:name ?name } LIMIT 5", self::$SPARQL_NS);
 	}
@@ -70,12 +70,12 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * @expectedException \SparQL\Exception
 	 */
-	function test_wrongSparQLDataSet2()
+	function test_wrongSparQLDataset2()
 	{
 		Connection::get(self::SPARQL_URL, "SELECT * WHERE { ?person a foaf:Person . ?person foaf:name ?name } LIMIT 5");
 	}
 
-	function test_navigateSparQLDataSet()
+	function test_navigateSparQLDataset()
 	{
 		$result = Connection::get(self::SPARQL_URL, "SELECT * WHERE { ?person a foaf:Person . ?person foaf:name ?name } LIMIT 2", self::$SPARQL_NS);
 
