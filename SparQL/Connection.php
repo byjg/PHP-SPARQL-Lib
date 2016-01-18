@@ -2,6 +2,9 @@
 
 namespace SparQL;
 
+use ByJG\Util\CurlException;
+use ByJG\Util\WebRequest;
+
 class Connection
 {
 
@@ -38,7 +41,7 @@ class Connection
      *
      * @param type $query
      * @param type $timeout
-     * @return \SparQL\Result
+     * @return Result
      */
     public function query($query, $timeout = null)
     {
@@ -73,38 +76,18 @@ class Connection
             print "<div class='debug'><a href='" . htmlspecialchars($url) . "'>" . htmlspecialchars($prefixes . $query) . "</a></div>\n";
         }
 
-        $ch = curl_init($url);
-        if ($timeout !== null) {
-            curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-        }
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "Accept: application/sparql-results+xml"
-        ));
+        $webRequest = new WebRequest($url);
 
-        $errno = null;
-        $error = null;
+        $output = $webRequest->get();
 
-        $output = curl_exec($ch);
-        $info = curl_getinfo($ch);
-        if (curl_errno($ch)) {
-            $errno = curl_errno($ch);
-            $error = 'Curl error: ' . curl_error($ch);
-        }
         if ($output === '') {
-            $errno = "-1";
-            $error = 'URL returned no data';
+            throw new Exception('URL returned no data', -1);
         }
-        if ($info['http_code'] != 200) {
-            $errno = $info['http_code'];
-            $error = 'Bad response, ' . $info['http_code'] . ': ' . $output;
-        }
-        curl_close($ch);
-
-        if (!is_null($errno)) {
-            throw new Exception($error, $errno);
+        if ($webRequest->getLastStatus() != 200) {
+            throw new Exception(
+                'Bad response, ' . $webRequest->getLastStatus() . ': ' . $output,
+                $webRequest->getLastStatus()
+            );
         }
 
         return $output;

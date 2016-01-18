@@ -21,41 +21,41 @@ class ResultsTest extends \PHPUnit_Framework_TestCase
     {
         $this->object = new Results(
             [
-                [
-                    "person" => "b52272200000000",
-                    "person.type" => "bnode",
-                    "name" => "A Tarazona",
-                    "name.type" => "literal",
-                    "name.datatype" => "http://www.w3.org/2001/XMLSchema#string",
-                ],
-                [
-                    "person" => "b52272200000002",
-                    "person.type" => "bnode",
-                    "name" => "Goran Z Mashanovich",
-                    "name.type" => "literal",
-                    "name.datatype" => "http://www.w3.org/2001/XMLSchema#string",
-                ],
-                [
-                    "person" => "b52272200000080",
-                    "person.type" => "bnode",
-                    "name" => "Dr Olivia Bragg",
-                    "name.type" => "literal",
-                    "name.datatype" => "http://www.w3.org/2001/XMLSchema#string",
-                ],
-                [
-                    "person" => "b8f362200000082",
-                    "person.type" => "bnode",
-                    "name" => "Dr Mike Surridge",
-                    "name.type" => "literal",
-                    "name.datatype" => "http://www.w3.org/2001/XMLSchema#string",
-                ],
-                [
-                    "person" => "bf4120a00000000",
-                    "person.type" => "bnode",
-                    "name" => "Judith Joseph",
-                    "name.type" => "literal",
-                    "name.datatype" => "http://www.w3.org/2001/XMLSchema#string",
-                ]
+		        [
+		            "person" => "b52272200000000",
+		            "person.type" => "bnode",
+		            "name" => "A Tarazona",
+		            "name.type" => "literal",
+		            "name.datatype" => "http://www.w3.org/2001/XMLSchema#string",
+		        ],
+		        [
+		            "person" => "b52272200000002",
+		            "person.type" => "bnode",
+		            "name" => "Goran Z Mashanovich",
+		            "name.type" => "literal",
+		            "name.datatype" => "http://www.w3.org/2001/XMLSchema#string",
+		        ],
+		        [
+		            "person" => "b52272200000080",
+		            "person.type" => "bnode",
+		            "name" => "Dr Olivia Bragg",
+		            "name.type" => "literal",
+		            "name.datatype" => "http://www.w3.org/2001/XMLSchema#string",
+		        ],
+		        [
+		            "person" => "b8f362200000082",
+		            "person.type" => "bnode",
+		            "name" => "Dr Mike Surridge",
+		            "name.type" => "literal",
+		            "name.datatype" => "http://www.w3.org/2001/XMLSchema#string",
+		        ],
+		        [
+		            "person" => "bf4120a00000000",
+		            "person.type" => "bnode",
+		            "name" => "Judith Joseph",
+		            "name.type" => "literal",
+		            "name.datatype" => "http://www.w3.org/2001/XMLSchema#string",
+		        ]
             ]
         );
         $this->object->setFields(['person', 'name']);
@@ -97,28 +97,24 @@ class ResultsTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(
             [
-                "person" => "b52272200000000",
-                "person.type" => "bnode",
-                "name" => "A Tarazona",
-                "name.type" => "literal",
-                "name.datatype" => "http://www.w3.org/2001/XMLSchema#string",
-            ],
-            $result1
+		        "person" => "b52272200000000",
+		        "person.type" => "bnode",
+		        "name" => "A Tarazona",
+		        "name.type" => "literal",
+		        "name.datatype" => "http://www.w3.org/2001/XMLSchema#string",
+            ], $result1
         );
 
         $result2 = $this->object[4];
 
         $this->assertEquals(
             [
-                "person" => "bf4120a00000000",
-                "person.type" => "bnode",
-                "name" => "Judith Joseph",
-                "name.type" => "literal",
-                "name.datatype" => "http://www.w3.org/2001/XMLSchema#string",
-            ],
-            $result2
+		        "person" => "bf4120a00000000",
+		        "person.type" => "bnode",
+		        "name" => "Judith Joseph",
+		        "name.type" => "literal",
+		        "name.datatype" => "http://www.w3.org/2001/XMLSchema#string",
+            ], $result2
         );
-        
     }
-
 }
