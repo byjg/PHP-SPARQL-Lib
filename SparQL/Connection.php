@@ -2,8 +2,8 @@
 
 namespace SparQL;
 
-use ByJG\Util\CurlException;
 use ByJG\Util\WebRequest;
+use SparQL\Exception;
 
 class Connection
 {
@@ -66,6 +66,13 @@ class Connection
         }
     }
 
+    /**
+     *
+     * @param string $sparql
+     * @param int $timeout Timeout in mileseconds
+     * @return string
+     * @throws Exception
+     */
     public function dispatchQuery($sparql, $timeout = null)
     {
         $url = $this->endpoint . "?query=" . urlencode($sparql);
@@ -77,6 +84,10 @@ class Connection
         }
 
         $webRequest = new WebRequest($url);
+        
+        if (!empty($timeout)) {
+            $webRequest->setCurlOption(CURLOPT_TIMEOUT_MS, $timeout);
+        }
 
         $output = $webRequest->get();
 
