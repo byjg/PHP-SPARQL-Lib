@@ -2,6 +2,7 @@
 
 namespace SparQL;
 
+use ByJG\Util\CurlException;
 use ByJG\Util\WebRequest;
 use SparQL\Exception;
 
@@ -89,10 +90,14 @@ class Connection
             $webRequest->setCurlOption(CURLOPT_TIMEOUT_MS, $timeout);
         }
 
-        $output = $webRequest->get();
+        try {
+            $output = $webRequest->get();
+        } catch (CurlException $ex) {
+            throw new ConnectionException($ex->getMessage());
+        }
 
         if ($output === '') {
-            throw new Exception('URL returned no data', -1);
+            throw new ConnectionException('URL returned no data', -1);
         }
         if ($webRequest->getLastStatus() != 200) {
             throw new Exception(
