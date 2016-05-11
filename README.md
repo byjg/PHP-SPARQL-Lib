@@ -30,4 +30,11 @@ foreach( $fields as $field )
 }
 ```
 
+## Run tests
+
+Just type:
+
+```
+phpunit
+```
 

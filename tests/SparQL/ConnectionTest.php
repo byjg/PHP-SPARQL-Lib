@@ -63,7 +63,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
      */
     function test_wrongSparQLDataset()
     {
-        Connection::get("http://localhost:9812/",
+        Connection::get("http://invaliddomain:9812/",
             "SELECT * WHERE { ?person a foaf:Person . ?person foaf:name ?name } LIMIT 5", self::$SPARQL_NS);
     }
 
