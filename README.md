@@ -19,9 +19,9 @@ $db->ns( "foaf","http://xmlns.com/foaf/0.1/" );
 $sparql = "SELECT * WHERE { ?person a foaf:Person . ?person foaf:name ?name } LIMIT 5";
 $result = $db->query( $sparql );
 
-$fields = $result->field_array();
+$fields = $result->fieldArray();
 
-print "<p>Number of rows: " . $result->num_rows() . " results.</p>";
+print "<p>Number of rows: " . $result->numRows() . " results.</p>";
 print "<table class='example_table'>";
 print "<tr>";
 foreach( $fields as $field )
