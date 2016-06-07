@@ -26,6 +26,10 @@ class Connection
         $this->ns[$short] = $long;
     }
 
+    /**
+     * @param null $params
+     * @return null
+     */
     public function cgiParams($params = null)
     {
         if ($params === null) {
@@ -33,15 +37,17 @@ class Connection
         }
         if ($params === "") {
             $this->params = null;
-            return;
+            return null;
         }
         $this->params = $params;
+
+        return $this->params;
     }
 
     /**
      *
-     * @param type $query
-     * @param type $timeout
+     * @param string $query
+     * @param int|null $timeout
      * @return Result
      */
     public function query($query, $timeout = null)
@@ -57,12 +63,16 @@ class Connection
         return new Result($parser->rows, $parser->fields);
     }
 
-    public function alive($timeout = 3)
+    /**
+     * @param int $timeout
+     * @return bool
+     */
+    public function alive($timeout = 3000)
     {
         try {
             $this->query("SELECT * WHERE { ?s ?p ?o } LIMIT 1", $timeout);
             return true;
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             return false;
         }
     }
@@ -72,7 +82,8 @@ class Connection
      * @param string $sparql
      * @param int $timeout Timeout in mileseconds
      * @return string
-     * @throws Exception
+     * @throws ConnectionException
+     * @throws \SparQL\Exception
      */
     public function dispatchQuery($sparql, $timeout = null)
     {
@@ -81,7 +92,7 @@ class Connection
             $url .= "&" . $this->params;
         }
         if ($this->debug) {
-            print "<div class='debug'><a href='" . htmlspecialchars($url) . "'>" . htmlspecialchars($prefixes . $query) . "</a></div>\n";
+            print "<div class='debug'><a href='" . htmlspecialchars($url) . "'>" . htmlspecialchars($sparql) . "</a></div>\n";
         }
 
         $webRequest = new WebRequest($url);
@@ -125,7 +136,7 @@ class Connection
 
         $result = $db->query($sparql);
         if (!$result) {
-            return;
+            return null;
         }
 
         return $result->fetchAll();

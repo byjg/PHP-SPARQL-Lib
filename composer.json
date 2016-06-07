@@ -16,7 +16,7 @@
     },
     "autoload": {
         "psr-4": {
-            "SparQL\\": "SparQL/"
+            "SparQL\\": "src/"
         }
     },
     "license": "LGPL-3.0"

@@ -22,10 +22,15 @@ class Result
         $this->fields = $fields;
     }
 
+    /**
+     * Fetch as array
+     * 
+     * @return array|null
+     */
     public function fetchArray()
     {
         if (!isset($this->rows[$this->i])) {
-            return;
+            return null;
         }
 
         $result = array();

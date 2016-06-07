@@ -25,6 +25,12 @@ class ParseXml
     // either you pass url atau contents.
     // Use 'url' or 'contents' for the parameter
     protected $type;
+    
+    protected $result;
+    protected $part;
+    protected $part_type;
+    protected $part_datatype;
+    protected $part_lang;
 
     // public function with the default parameter value
     public function __construct($url)
@@ -50,7 +56,6 @@ class ParseXml
     {
         $this->rows = array();
         $this->fields = array();
-        $data = '';
         $this->parser = xml_parser_create("UTF-8");
         xml_set_object($this->parser, $this);
         xml_set_element_handler($this->parser, 'startXml', 'endXml');
