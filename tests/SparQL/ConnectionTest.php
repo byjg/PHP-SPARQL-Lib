@@ -8,9 +8,12 @@ namespace SparQL;
 class ConnectionTest extends \PHPUnit_Framework_TestCase
 {
 
-    const SPARQL_URL = 'http://rdf.ecs.soton.ac.uk/sparql/';
+    const SPARQL_URL = 'http://dbpedia.org/sparql';
 
-    protected static $SPARQL_NS = array("foaf" => "http://xmlns.com/foaf/0.1/");
+    protected static $SPARQL_NS = [
+        'dbpedia-owl' => 'http://dbpedia.org/ontology/',
+        'dbpprop' => 'http://dbpedia.org/property/'
+    ];
 
     /**
      * Sets up the fixture, for example, opens a network connection.
@@ -41,7 +44,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
             $connection->ns($key, $value);
         }
 
-        $result = $connection->query("SELECT * WHERE { ?person a foaf:Person . ?person foaf:name ?name } LIMIT 5");
+        $result = $connection->query("select distinct ?Concept where {[] a ?Concept} LIMIT 5");
 
         $this->assertEquals(5, $result->numRows());
     }
@@ -54,7 +57,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
     public function testGetOk()
     {
         $result = Connection::get(self::SPARQL_URL,
-                "SELECT * WHERE { ?person a foaf:Person . ?person foaf:name ?name } LIMIT 5", self::$SPARQL_NS);
+                "select distinct ?Concept where {[] a ?Concept} LIMIT 5", self::$SPARQL_NS);
         $this->assertEquals(5, count($result));
     }
 
@@ -64,7 +67,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
     function test_wrongSparQLDataset()
     {
         Connection::get("http://invaliddomain:9812/",
-            "SELECT * WHERE { ?person a foaf:Person . ?person foaf:name ?name } LIMIT 5", self::$SPARQL_NS);
+            "select distinct ?Concept where {[] a ?Concept} LIMIT 5", self::$SPARQL_NS);
     }
 
     /**
@@ -72,22 +75,31 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
      */
     function test_wrongSparQLDataset2()
     {
-        Connection::get(self::SPARQL_URL, "SELECT * WHERE { ?person a foaf:Person . ?person foaf:name ?name } LIMIT 5");
+        Connection::get(self::SPARQL_URL, "?Concept  {[] a ?Concept} LIMIT 5");  // Without NS
     }
 
     function test_navigateSparQLDataset()
     {
-        $result = Connection::get(self::SPARQL_URL,
-                "SELECT * WHERE { ?person a foaf:Person . ?person foaf:name ?name } LIMIT 2", self::$SPARQL_NS);
+        $result = Connection::get(
+            self::SPARQL_URL,
+            'SELECT  ?name ?meaning
+                WHERE 
+                {
+                    ?s a  dbpedia-owl:Name;
+                    dbpprop:name  ?name;
+                    dbpprop:meaning  ?meaning 
+                    . FILTER (str(?name) = "John")
+                }',
+            self::$SPARQL_NS
+        );
 
-        $this->assertEquals(2, count($result));
+        $this->assertEquals(1, count($result));
 
-        $this->assertEquals($result[0]["person.type"], "bnode");
+
+
+        $this->assertEquals($result[0]["name"], "John");
         $this->assertEquals($result[0]["name.type"], "literal");
-        $this->assertEquals($result[0]["name.datatype"], "http://www.w3.org/2001/XMLSchema#string");
-
-        $this->assertEquals($result[1]["person.type"], "bnode");
-        $this->assertEquals($result[1]["name.type"], "literal");
-        $this->assertEquals($result[1]["name.datatype"], "http://www.w3.org/2001/XMLSchema#string");
+        $this->assertEquals($result[0]["meaning"], "Graced by Yahweh , Yahweh is gracious");
+        $this->assertEquals($result[0]["meaning.type"], "literal");
     }
 }
