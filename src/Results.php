@@ -20,7 +20,7 @@ class Results extends \ArrayIterator
     public function toHtml()
     {
         $html = "<table class='sparql-results'><tr>";
-        foreach ($this->fields as $i => $field) {
+        foreach ($this->fields as $field) {
             $html .= "<th>?$field</th>";
         }
         $html .= "</tr>";

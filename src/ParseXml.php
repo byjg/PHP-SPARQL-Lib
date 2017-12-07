@@ -18,21 +18,28 @@ class ParseXml
     protected $keys;
     protected $path;
     protected $chars = "";
-    protected $looks_legit = false;
+    protected $looksLegit = false;
     // Public properties
     public $rows;
     public $fields;
+
+    protected $url;
     // either you pass url atau contents.
     // Use 'url' or 'contents' for the parameter
     protected $type;
     
     protected $result;
     protected $part;
-    protected $part_type;
-    protected $part_datatype;
-    protected $part_lang;
+    protected $partType;
+    protected $partDatatype;
+    protected $partLang;
 
-    // public function with the default parameter value
+    /**
+     * ParseXml constructor.
+     *
+     * @param $url
+     * @throws \SparQL\Exception
+     */
     public function __construct($url)
     {
         $this->url = $url;
@@ -40,7 +47,9 @@ class ParseXml
 
         if (preg_match('~^https?://~', $url)) {
             $this->type = 'url';
-        } else if (preg_match('~^file://~', $url)) {
+        }
+
+        if (preg_match('~^file://~', $url)) {
             $filename = str_replace('file://', '', $url);
             if (!file_exists($filename)) {
                 throw new Exception("File name $url does not exists");
@@ -51,7 +60,9 @@ class ParseXml
         $this->parse();
     }
 
-    // parse XML data
+    /**
+     * @throws \SparQL\Exception
+     */
     protected function parse()
     {
         $this->rows = array();
@@ -66,39 +77,52 @@ class ParseXml
         if ($this->type == 'url') {
             // if use type = 'url' now we open the XML with fopen
 
-            if (!($fp = @fopen($this->url, 'rb'))) {
+            if (!($handle = @fopen($this->url, 'rb'))) {
                 throw new Exception("Cannot open {$this->url}");
             }
 
-            while (($data = fread($fp, 8192))) {
-                if (!xml_parse($this->parser, $data, feof($fp))) {
-                    throw new Exception(sprintf('XML error at line %d column %d',
-                        xml_get_current_line_number($this->parser), xml_get_current_column_number($this->parser))
+            while (($data = fread($handle, 8192))) {
+                if (!xml_parse($this->parser, $data, feof($handle))) {
+                    throw new Exception(
+                        sprintf(
+                            'XML error at line %d column %d',
+                            xml_get_current_line_number($this->parser),
+                            xml_get_current_column_number($this->parser)
+                        )
                     );
                 }
             }
-        } else if ($this->type == 'contents') {
+        } elseif ($this->type == 'contents') {
             // Now we can pass the contents, maybe if you want
             // to use CURL, SOCK or other method.
             $lines = explode("\n", $this->url);
             foreach ($lines as $val) {
                 $data = $val . "\n";
                 if (!xml_parse($this->parser, $data)) {
-                    throw new Exception($data . "\n" . sprintf('XML error at line %d column %d',
-                        xml_get_current_line_number($this->parser), xml_get_current_column_number($this->parser))
+                    throw new Exception(
+                        $data . "\n" . sprintf(
+                            'XML error at line %d column %d',
+                            xml_get_current_line_number($this->parser),
+                            xml_get_current_column_number($this->parser)
+                        )
                     );
                 }
             }
         }
-        if (!$this->looks_legit) {
+        if (!$this->looksLegit) {
             throw new Exception("Didn't even see a sparql element, is this really an endpoint?");
         }
     }
 
+    /**
+     * @param $parser
+     * @param $name
+     * @param $attr
+     */
     protected function startXml($parser, $name, $attr)
     {
         if ($name == "sparql") {
-            $this->looks_legit = true;
+            $this->looksLegit = true;
         }
         if ($name == "result") {
             $this->result = array();
@@ -107,16 +131,16 @@ class ParseXml
             $this->part = $attr["name"];
         }
         if ($name == "uri" || $name == "bnode") {
-            $this->part_type = $name;
+            $this->partType = $name;
             $this->chars = "";
         }
         if ($name == "literal") {
-            $this->part_type = "literal";
+            $this->partType = "literal";
             if (isset($attr["datatype"])) {
-                $this->part_datatype = $attr["datatype"];
+                $this->partDatatype = $attr["datatype"];
             }
             if (isset($attr["xml:lang"])) {
-                $this->part_lang = $attr["xml:lang"];
+                $this->partLang = $attr["xml:lang"];
             }
             $this->chars = "";
         }
@@ -133,14 +157,14 @@ class ParseXml
         }
         if ($name == "uri" || $name == "bnode" || $name == "literal") {
             $this->result[$this->part] = array("type" => $name, "value" => $this->chars);
-            if (isset($this->part_lang)) {
-                $this->result[$this->part]["lang"] = $this->part_lang;
+            if (isset($this->partLang)) {
+                $this->result[$this->part]["lang"] = $this->partLang;
             }
-            if (isset($this->part_datatype)) {
-                $this->result[$this->part]["datatype"] = $this->part_datatype;
+            if (isset($this->partDatatype)) {
+                $this->result[$this->part]["datatype"] = $this->partDatatype;
             }
-            $this->part_datatype = null;
-            $this->part_lang = null;
+            $this->partDatatype = null;
+            $this->partLang = null;
         }
     }
 

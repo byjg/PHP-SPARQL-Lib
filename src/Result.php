@@ -14,7 +14,7 @@ class Result
      * @var array
      */
     protected $fields;
-    protected $i = 0;
+    protected $iPos = 0;
 
     public function __construct($rows, $fields)
     {
@@ -24,17 +24,17 @@ class Result
 
     /**
      * Fetch as array
-     * 
+     *
      * @return array|null
      */
     public function fetchArray()
     {
-        if (!isset($this->rows[$this->i])) {
+        if (!isset($this->rows[$this->iPos])) {
             return null;
         }
 
         $result = array();
-        foreach ($this->rows[$this->i++] as $k => $v) {
+        foreach ($this->rows[$this->iPos++] as $k => $v) {
             $result[$k] = $v["value"];
             $result["$k.type"] = $v["type"];
             if (isset($v["language"])) {
@@ -55,8 +55,9 @@ class Result
     {
         $result = new Results();
         $result->setFields($this->fields);
-        foreach ($this->rows as $i => $row) {
-            $result[] = $this->fetchArray();
+        $this->iPos = 0;
+        while ($array = $this->fetchArray()) {
+            $result[] = $array;
         }
         return $result;
     }
@@ -71,8 +72,8 @@ class Result
         return $this->fields;
     }
 
-    public function fieldName($i)
+    public function fieldName($iPos)
     {
-        return $this->fields[$i];
+        return $this->fields[$iPos];
     }
 }

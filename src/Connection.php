@@ -4,15 +4,15 @@ namespace SparQL;
 
 use ByJG\Util\CurlException;
 use ByJG\Util\WebRequest;
-use SparQL\Exception;
 
 class Connection
 {
 
-    protected $db;
+    protected $connection;
     protected $debug = false;
-    protected $ns = array();
+    protected $namespace = array();
     protected $params = null;
+    protected $endpoint;
 
     # capabilities are either true, false or null if not yet tested.
 
@@ -23,7 +23,7 @@ class Connection
 
     public function ns($short, $long)
     {
-        $this->ns[$short] = $long;
+        $this->namespace[$short] = $long;
     }
 
     /**
@@ -45,20 +45,21 @@ class Connection
     }
 
     /**
-     *
      * @param string $query
      * @param int|null $timeout
      * @return Result
+     * @throws \SparQL\ConnectionException
+     * @throws \SparQL\Exception
      */
     public function query($query, $timeout = null)
     {
         $prefixes = "";
-        foreach ($this->ns as $k => $v) {
+        foreach ($this->namespace as $k => $v) {
             $prefixes .= "PREFIX $k: <$v>\n";
         }
         $output = $this->dispatchQuery($prefixes . $query, $timeout);
 
-        $parser = new ParseXml($output, 'contents');
+        $parser = new ParseXml($output);
 
         return new Result($parser->rows, $parser->fields);
     }
@@ -92,7 +93,11 @@ class Connection
             $url .= "&" . $this->params;
         }
         if ($this->debug) {
-            print "<div class='debug'><a href='" . htmlspecialchars($url) . "'>" . htmlspecialchars($sparql) . "</a></div>\n";
+            print "<div class='debug'>"
+                . "<a href='" . htmlspecialchars($url) . "'>"
+                . htmlspecialchars($sparql)
+                . "</a></div>\n"
+            ;
         }
 
         $webRequest = new WebRequest($url);
@@ -121,20 +126,21 @@ class Connection
     }
 
     /**
-     *
      * @param string $endpoint
      * @param string $sparql
-     * @param array $ns
+     * @param array $namespace
      * @return Results
+     * @throws \SparQL\ConnectionException
+     * @throws \SparQL\Exception
      */
-    public static function get($endpoint, $sparql, $ns = null)
+    public static function get($endpoint, $sparql, $namespace = null)
     {
-        $db = new Connection($endpoint);
-        foreach ((array) $ns as $key => $value) {
-            $db->ns($key, $value);
+        $connection = new Connection($endpoint);
+        foreach ((array) $namespace as $key => $value) {
+            $connection->ns($key, $value);
         }
 
-        $result = $db->query($sparql);
+        $result = $connection->query($sparql);
         if (!$result) {
             return null;
         }
@@ -149,7 +155,7 @@ class Connection
     # and many more capability options (suggestions to cjg@ecs.soton.ac.uk)
 
     protected $caps = array();
-    protected $caps_desc = array(
+    protected $capsDesc = array(
         "select" => "Basic SELECT",
         "constant_as" => "SELECT (\"foo\" AS ?bar)",
         "math_as" => "SELECT (2+3 AS ?bar)",
@@ -158,102 +164,132 @@ class Connection
         "sample" => "SELECT (SAMPLE(?a) AS ?n) ?b ... GROUP BY ?b",
         "load" => "LOAD <...>",
     );
-    protected $caps_cache;
-    protected $caps_anysubject;
+    protected $capsCache;
+    protected $capsAnysubject;
 
-    public function capabilityCache($filename, $dba_type = 'db4')
+    /**
+     * @param $filename
+     * @param string $dbaType
+     */
+    public function capabilityCache($filename, $dbaType = 'db4')
     {
         $handlers = dba_handlers(true);
-        if (array_key_exists($dba_type, $handlers)) { // it is possible to save cache?
-            $this->caps_cache = array($filename, $dba_type);
+        if (array_key_exists($dbaType, $handlers)) { // it is possible to save cache?
+            $this->capsCache = array($filename, $dbaType);
         }
     }
 
     public function capabilityCodes()
     {
-        return array_keys($this->caps_desc);
+        return array_keys($this->capsDesc);
     }
 
     public function capabilityDescription($code)
     {
-        return $this->caps_desc[$code];
+        return $this->capsDesc[$code];
     }
     # return true if the endpoint supports a capability
     # nb. returns false if connecion isn't authoriased to use the feature, eg LOAD
 
+    /**
+     * @param $code
+     * @return bool|mixed|null
+     * @throws \SparQL\Exception
+     */
     public function supports($code)
     {
         if (isset($this->caps[$code])) {
             return $this->caps[$code];
         }
-        $was_cached = false;
-        if (isset($this->caps_cache)) {
-            $dbaCache = dba_open($this->caps_cache[0], "c", $this->caps_cache[1]);
+        $wasCached = false;
+        if (isset($this->capsCache)) {
+            $dbaCache = dba_open($this->capsCache[0], "c", $this->capsCache[1]);
 
-            $CACHE_TIMEOUT_SECONDS = 7 * 24 * 60 * 60;
-            $db_key = $this->endpoint . ";" . $code;
-            $db_val = dba_fetch($db_key, $dbaCache);
-            if ($db_val !== false) {
-                list( $result, $when ) = preg_split('/;/', $db_val);
-                if ($when + $CACHE_TIMEOUT_SECONDS > time()) {
+            $cacheTimeoutSeconds = 7 * 24 * 60 * 60;
+            $dbKey = $this->endpoint . ";" . $code;
+            $dbVal = dba_fetch($dbKey, $dbaCache);
+            if ($dbVal !== false) {
+                list( $result, $when ) = preg_split('/;/', $dbVal);
+                if ($when + $cacheTimeoutSeconds > time()) {
                     return $result;
                 }
-                $was_cached = true;
+                $wasCached = true;
             }
 
             dba_close($dbaCache);
         }
-        $r = null;
 
-        if ($code == "select") {
-            $r = $this->testSelect();
-        } elseif ($code == "constant_as") {
-            $r = $this->testConstantAs();
-        } elseif ($code == "math_as") {
-            $r = $this->testMathAs();
-        } elseif ($code == "count") {
-            $r = $this->testCount();
-        } elseif ($code == "max") {
-            $r = $this->testMax();
-        } elseif ($code == "load") {
-            $r = $this->testLoad();
-        } elseif ($code == "sample") {
-            $r = $this->testSample();
-        } else {
-            print "<p>Unknown capability code: '$code'</p>";
-            return false;
+        $result = null;
+        
+        $data = [
+            "select" => function () {
+                 return $this->testSelect();
+            },
+            "constant_as" => function () {
+                 return $this->testConstantAs();
+            },
+            "math_as" => function () {
+                 return $this->testMathAs();
+            },
+            "count" => function () {
+                 return $this->testCount();
+            },
+            "max" => function () {
+                 return $this->testMax();
+            },
+            "load" => function () {
+                 return $this->testLoad();
+            },
+            "sample" => function () {
+                 return $this->testSample();
+            }
+        ];
+
+        if (!isset($data[$code])) {
+            throw new \SparQL\Exception("Unknown capability code: '$code'");
         }
-        $this->caps[$code] = $r;
-        if (isset($this->caps_cache)) {
-            $dbaCache = dba_open($this->caps_cache[0], "c", $this->caps_cache[1]);
 
-            $db_key = $this->endpoint . ";" . $code;
-            $db_val = $r . ";" . time();
-            if ($was_cached) {
-                dba_replace($db_key, $db_val, $dbaCache);
+        $this->caps[$code] = $data[$code]();
+        if (isset($this->capsCache)) {
+            $dbaCache = dba_open($this->capsCache[0], "c", $this->capsCache[1]);
+
+            $dbKey = $this->endpoint . ";" . $code;
+            $dbVal = $result . ";" . time();
+            if ($wasCached) {
+                dba_replace($dbKey, $dbVal, $dbaCache);
             } else {
-                dba_insert($db_key, $db_val, $dbaCache);
+                dba_insert($dbKey, $dbVal, $dbaCache);
             }
 
             dba_close($dbaCache);
         }
-        return $r;
+        return $this->caps[$code];
     }
 
+    /**
+     * @return mixed
+     * @throws \SparQL\ConnectionException
+     * @throws \SparQL\Exception
+     */
     public function anySubject()
     {
-        if (!isset($this->caps_anysubject)) {
+        if (!isset($this->capsAnysubject)) {
             $results = $this->query(
-                "SELECT * WHERE { ?s ?p ?o } LIMIT 1");
+                "SELECT * WHERE { ?s ?p ?o } LIMIT 1"
+            );
             if (sizeof($results)) {
                 $row = $results->fetchArray();
-                $this->caps_anysubject = $row["s"];
+                $this->capsAnysubject = $row["s"];
             }
         }
-        return $this->caps_anysubject;
+        return $this->capsAnysubject;
     }
     # return true if the endpoint supports SELECT
 
+    /**
+     * @return bool
+     * @throws \SparQL\ConnectionException
+     */
     public function testSelect()
     {
         try {
@@ -265,6 +301,10 @@ class Connection
     }
     # return true if the endpoint supports AS
 
+    /**
+     * @return bool
+     * @throws \SparQL\ConnectionException
+     */
     public function testMathAs()
     {
         try {
@@ -276,6 +316,10 @@ class Connection
     }
     # return true if the endpoint supports AS
 
+    /**
+     * @return bool
+     * @throws \SparQL\ConnectionException
+     */
     public function testConstantAs()
     {
         try {
@@ -287,49 +331,65 @@ class Connection
     }
     # return true if the endpoint supports SELECT (COUNT(?x) as ?n) ... GROUP BY
 
+    /**
+     * @return bool
+     * @throws \SparQL\ConnectionException
+     */
     public function testCount()
     {
         try {
             # assumes at least one rdf:type predicate
-            $s = $this->anySubject();
-            if (!isset($s)) {
+            $subject = $this->anySubject();
+            if (!isset($subject)) {
                 return false;
             }
-            $this->dispatchQuery("SELECT (COUNT(?p) AS ?n) ?o WHERE { <$s> ?p ?o } GROUP BY ?o");
+            $this->dispatchQuery("SELECT (COUNT(?p) AS ?n) ?o WHERE { <$subject> ?p ?o } GROUP BY ?o");
             return true;
         } catch (Exception $ex) {
             return false;
         }
     }
 
+    /**
+     * @return bool
+     * @throws \SparQL\ConnectionException
+     */
     public function testMax()
     {
         try {
-            $s = $this->anySubject();
-            if (!isset($s)) {
+            $subject = $this->anySubject();
+            if (!isset($subject)) {
                 return false;
             }
-            $this->dispatchQuery("SELECT (MAX(?p) AS ?max) ?o WHERE { <$s> ?p ?o } GROUP BY ?o");
+            $this->dispatchQuery("SELECT (MAX(?p) AS ?max) ?o WHERE { <$subject> ?p ?o } GROUP BY ?o");
             return true;
         } catch (Exception $ex) {
             return false;
         }
     }
 
+    /**
+     * @return bool
+     * @throws \SparQL\ConnectionException
+     */
     public function testSample()
     {
         try {
-            $s = $this->anySubject();
-            if (!isset($s)) {
+            $subject = $this->anySubject();
+            if (!isset($subject)) {
                 return false;
             }
-            $this->dispatchQuery("SELECT (SAMPLE(?p) AS ?sam) ?o WHERE { <$s> ?p ?o } GROUP BY ?o");
+            $this->dispatchQuery("SELECT (SAMPLE(?p) AS ?sam) ?o WHERE { <$subject> ?p ?o } GROUP BY ?o");
             return true;
         } catch (Exception $ex) {
             return false;
         }
     }
 
+    /**
+     * @return bool
+     * @throws \SparQL\ConnectionException
+     */
     public function testLoad()
     {
         try {
