@@ -33,10 +33,6 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
         
     }
 
-    /**
-     * @covers SparQL\Connection::query
-     * @covers SparQL\Connection::ns
-     */
     public function testQueryOk()
     {
         $connection = new Connection(self::SPARQL_URL);
@@ -50,24 +46,29 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers SparQL\Connection::get
-     * @covers SparQL\Connection::query
-     * @covers SparQL\Connection::ns
+     * @throws \SparQL\ConnectionException
+     * @throws \SparQL\Exception
      */
     public function testGetOk()
     {
-        $result = Connection::get(self::SPARQL_URL,
-                "select distinct ?Concept where {[] a ?Concept} LIMIT 5", self::$SPARQL_NS);
+        $result = Connection::get(
+            self::SPARQL_URL,
+            "select distinct ?Concept where {[] a ?Concept} LIMIT 5",
+            self::$SPARQL_NS
+        );
         $this->assertEquals(5, count($result));
     }
 
     /**
      * @expectedException \SparQL\ConnectionException
      */
-    function test_wrongSparQLDataset()
+    public function testWrongSparQLDataset()
     {
-        Connection::get("http://invaliddomain:9812/",
-            "select distinct ?Concept where {[] a ?Concept} LIMIT 5", self::$SPARQL_NS);
+        Connection::get(
+            "http://invaliddomain:9812/",
+            "select distinct ?Concept where {[] a ?Concept} LIMIT 5",
+            self::$SPARQL_NS
+        );
     }
 
     /**
@@ -101,5 +102,17 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($result[0]["name.type"], "literal");
         $this->assertEquals($result[0]["meaning"], "\"spear king\"");
         $this->assertEquals($result[0]["meaning.type"], "literal");
+    }
+
+    function testSupports()
+    {
+        $connection = new Connection(self::SPARQL_URL);
+        $this->assertTrue($connection->supports('select'));
+        $this->assertTrue($connection->supports('constant_as'));
+        $this->assertTrue($connection->supports('math_as'));
+        $this->assertTrue($connection->supports('count'));
+        $this->assertTrue($connection->supports('max'));
+        $this->assertFalse($connection->supports('load'));
+        $this->assertTrue($connection->supports('sample'));
     }
 }
