@@ -88,7 +88,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
                     ?s a  dbpedia-owl:Name;
                     dbpprop:name  ?name;
                     dbpprop:meaning  ?meaning 
-                    . FILTER (str(?name) = "John")
+                    . FILTER (str(?name) = "Garrick")
                 }',
             self::$SPARQL_NS
         );
@@ -97,9 +97,9 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
 
 
 
-        $this->assertEquals($result[0]["name"], "John");
+        $this->assertEquals($result[0]["name"], "Garrick");
         $this->assertEquals($result[0]["name.type"], "literal");
-        $this->assertEquals($result[0]["meaning"], "Graced by Yahweh , Yahweh is gracious");
+        $this->assertEquals($result[0]["meaning"], "\"spear king\"");
         $this->assertEquals($result[0]["meaning.type"], "literal");
     }
 }
