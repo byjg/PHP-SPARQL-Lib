@@ -277,7 +277,7 @@ class Connection
             $results = $this->query(
                 "SELECT * WHERE { ?s ?p ?o } LIMIT 1"
             );
-            if (sizeof($results)) {
+            if (count($results)) {
                 $row = $results->fetchArray();
                 $this->capsAnysubject = $row["s"];
             }
