@@ -246,7 +246,7 @@ class Connection
         ];
 
         if (!isset($data[$code])) {
-            throw new \SparQL\Exception("Unknown capability code: '$code'");
+            throw new Exception("Unknown capability code: '$code'");
         }
 
         $this->caps[$code] = $data[$code]();
@@ -277,7 +277,7 @@ class Connection
             $results = $this->query(
                 "SELECT * WHERE { ?s ?p ?o } LIMIT 1"
             );
-            if (count($results)) {
+            if ($results->numRows() > 0) {
                 $row = $results->fetchArray();
                 $this->capsAnysubject = $row["s"];
             }
