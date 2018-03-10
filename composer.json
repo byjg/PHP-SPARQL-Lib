@@ -1,23 +1,26 @@
 {
-    "name": "byjg/sparqllib",
-    "description": "Simple library to query SPARQL from PHP",
-    "authors": [
-        {
-            "name": "jg",
-            "email": "joao@byjg.com.br"
-        },
-        {
-            "name": "Christopher Gutteridge",
-            "email": "cjg@ecs.soton.ac.uk"
-        }
-    ],
-    "require": {
-        "byjg/webrequest": "1.0.*"
+  "name": "byjg/sparqllib",
+  "description": "Simple library to query SPARQL from PHP",
+  "authors": [
+    {
+      "name": "jg",
+      "email": "joao@byjg.com.br"
     },
-    "autoload": {
-        "psr-4": {
-            "SparQL\\": "src/"
-        }
-    },
-    "license": "LGPL-3.0"
+    {
+      "name": "Christopher Gutteridge",
+      "email": "cjg@ecs.soton.ac.uk"
+    }
+  ],
+  "require": {
+    "byjg/webrequest": "1.0.*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": ">5.7"
+  },
+  "autoload": {
+    "psr-4": {
+      "SparQL\\": "src/"
+    }
+  },
+  "license": "LGPL-3.0"
 }
